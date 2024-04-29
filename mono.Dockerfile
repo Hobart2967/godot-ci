@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     zip \
     rsync \
+    make \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # When in doubt see the downloads page
@@ -48,3 +50,20 @@ RUN bash /opt/butler/getbutler.sh
 RUN /opt/butler/bin/butler -V
 
 ENV PATH="/opt/butler/bin:${PATH}"
+
+#region .NET Installation
+RUN . /etc/os-release && wget https://packages.microsoft.com/config/$ID/$VERSION_ID/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+RUN dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
+RUN apt update
+RUN apt install -y dotnet-sdk-6.0 dotnet-sdk-7.0 dotnet-sdk-8.0
+#endregion
+
+#region FBX GLTF
+RUN cd /root/
+RUN wget https://github.com/godotengine/FBX2glTF/releases/latest/download/FBX2glTF-linux-x86_64.zip -O /root/FBX2glTF-linux-x86_64.zip
+RUN unzip /root/FBX2glTF-linux-x86_64.zip
+RUN rm -rf /root/FBX2glTF-linux-x86_64.zip
+RUN godot --headless --quit
+RUN sed -i -e 's@filesystem/import/fbx/fbx2gltf_path = ""@filesystem/import/fbx/fbx2gltf_path = "/root/FBX2glTF-linux-x86_64/FBX2glTF-linux-x86_64"@g' \
+    /root/.config/godot/editor_settings-4.tres
+#endregion

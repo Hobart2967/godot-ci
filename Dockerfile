@@ -13,9 +13,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     adb \
     openjdk-17-jdk-headless \
     rsync \
+    make \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-ARG GODOT_VERSION="4.2.1"
+ARG GODOT_VERSION="4.2.2"
 ARG RELEASE_NAME="stable"
 ARG SUBDIR=""
 ARG GODOT_TEST_ARGS=""
@@ -62,3 +64,13 @@ RUN echo 'export/android/debug_keystore_pass = "android"' >> ~/.config/godot/edi
 RUN echo 'export/android/force_system_user = false' >> ~/.config/godot/editor_settings-4.tres
 RUN echo 'export/android/timestamping_authority_url = ""' >> ~/.config/godot/editor_settings-4.tres
 RUN echo 'export/android/shutdown_adb_on_exit = true' >> ~/.config/godot/editor_settings-4.tres
+
+#region FBX GLTF
+RUN cd /root/
+RUN wget https://github.com/godotengine/FBX2glTF/releases/latest/download/FBX2glTF-linux-x86_64.zip -O /root/FBX2glTF-linux-x86_64.zip
+RUN unzip /root/FBX2glTF-linux-x86_64.zip
+RUN rm -rf /root/FBX2glTF-linux-x86_64.zip
+RUN godot --headless --quit
+RUN sed -i -e 's@filesystem/import/fbx/fbx2gltf_path = ""@filesystem/import/fbx/fbx2gltf_path = "/root/FBX2glTF-linux-x86_64/FBX2glTF-linux-x86_64"@g' \
+    /root/.config/godot/editor_settings-4.tres
+#endregion
